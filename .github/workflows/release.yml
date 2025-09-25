@@ -6,6 +6,18 @@ on:
       - 'v*'
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag for the release (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+        type: string
+      create_release:
+        description: 'Create a GitHub release'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   build-and-release:
@@ -49,13 +61,16 @@ jobs:
         if [[ "${{ github.event_name }}" == "push" ]]; then
           echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           echo "release_name=Release ${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "tag_name=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          echo "release_name=Release ${{ inputs.version }}" >> $GITHUB_OUTPUT
         else
           echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
           echo "release_name=${{ github.event.release.name }}" >> $GITHUB_OUTPUT
         fi
 
-    - name: Create Release (if triggered by tag)
-      if: github.event_name == 'push'
+    - name: Create Release
+      if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -80,13 +95,14 @@ jobs:
     - name: Get upload URL
       id: get_upload_url
       run: |
-        if [[ "${{ github.event_name }}" == "push" ]]; then
+        if [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
           echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
         else
           echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
         fi
 
     - name: Upload Debug APK
+      if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -97,6 +113,7 @@ jobs:
         asset_content_type: application/vnd.android.package-archive
 
     - name: Upload Release APK
+      if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,3 +122,12 @@ jobs:
         asset_path: ./app/build/outputs/apk/release/app-release-unsigned.apk
         asset_name: gps-app-release-${{ steps.release_info.outputs.tag_name }}.apk
         asset_content_type: application/vnd.android.package-archive
+
+    - name: Upload APKs as Artifacts (Manual Dispatch)
+      if: github.event_name == 'workflow_dispatch' && !inputs.create_release
+      uses: actions/upload-artifact@v3
+      with:
+        name: apk-files-${{ steps.release_info.outputs.tag_name }}
+        path: |
+          ./app/build/outputs/apk/debug/app-debug.apk
+          ./app/build/outputs/apk/release/app-release-unsigned.apk
