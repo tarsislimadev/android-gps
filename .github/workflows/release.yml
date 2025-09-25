@@ -37,7 +37,7 @@ jobs:
       uses: android-actions/setup-android@v3
 
     - name: Cache Gradle packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -72,12 +72,10 @@ jobs:
     - name: Create Release
       if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.release_info.outputs.tag_name }}
-        release_name: ${{ steps.release_info.outputs.release_name }}
+        name: ${{ steps.release_info.outputs.release_name }}
         draft: false
         prerelease: false
         body: |
@@ -92,40 +90,18 @@ jobs:
 
           **Note**: You may need to enable "Install from unknown sources" in your device settings.
 
-    - name: Get upload URL
-      id: get_upload_url
-      run: |
-        if [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
-        else
-          echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Upload Debug APK
+    - name: Upload Release Assets
       if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
-        asset_path: ./app/build/outputs/apk/debug/app-debug.apk
-        asset_name: gps-app-debug-${{ steps.release_info.outputs.tag_name }}.apk
-        asset_content_type: application/vnd.android.package-archive
-
-    - name: Upload Release APK
-      if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
-        asset_path: ./app/build/outputs/apk/release/app-release-unsigned.apk
-        asset_name: gps-app-release-${{ steps.release_info.outputs.tag_name }}.apk
-        asset_content_type: application/vnd.android.package-archive
+        tag_name: ${{ steps.release_info.outputs.tag_name }}
+        files: |
+          ./app/build/outputs/apk/debug/app-debug.apk
+          ./app/build/outputs/apk/release/app-release-unsigned.apk
 
     - name: Upload APKs as Artifacts (Manual Dispatch)
       if: github.event_name == 'workflow_dispatch' && !inputs.create_release
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: apk-files-${{ steps.release_info.outputs.tag_name }}
         path: |
