@@ -2,6 +2,10 @@
 
 An Android application for GPS functionality built with Kotlin and modern Android development practices.
 
+Just open this project on Cursor IDE in PowerShell.
+
+READ ALL FILE
+
 ## Project Information
 
 - **Package Name**: `br.tmvdl.gps`
