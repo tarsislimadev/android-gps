@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Android application project named "GPS" (`br.tmvdl.gps`) built with Kotlin and Android Gradle Plugin 8.13.0. Currently, it contains only the standard Android Studio template structure with Navigation Components - no actual GPS functionality has been implemented yet.
+This is an Android application project named "GPS" (`br.tmvdl.gps`) built with Kotlin and Android Gradle Plugin 8.13.0. Currently, it contains a functional GPS tracking application with location data management and display capabilities.
 
 ## Build Commands
 
@@ -25,14 +25,32 @@ This is an Android application project named "GPS" (`br.tmvdl.gps`) built with K
 ### Navigation Architecture
 The app uses **Android Navigation Component** with a single-activity architecture:
 - `MainActivity` hosts the navigation controller
-- Two template fragments: `FirstFragment` and `SecondFragment` with bidirectional navigation
+- Two fragments: `FirstFragment` (GPS data display) and `SecondFragment` (template)
 - Navigation graph defined in `res/navigation/nav_graph.xml`
 - Uses Material Design with `CoordinatorLayout`, `AppBarLayout`, and `FloatingActionButton`
 
+### Location Services Architecture
+The GPS functionality is implemented with a clean separation of concerns:
+- **LocationDataManager**: Core location management class that handles all location providers
+- **LocationInfo**: Data class representing location data from various providers
+- **LocationData**: Container class for complete location state
+- **LocationInfoAdapter**: RecyclerView adapter for displaying location information
+
 ### Key Components
-- **Main Activity**: `MainActivity.kt` - Sets up toolbar, navigation, and FAB with placeholder action
-- **Fragments**: Standard template fragments using View Binding pattern
-- **Package Structure**: `br.tmvdl.gps` (Brazilian domain, likely personal project)
+- **MainActivity**: `MainActivity.kt` - Sets up toolbar and navigation
+- **FirstFragment**: `FirstFragment.kt` - Main GPS interface with permission handling and location display
+- **LocationDataManager**: `LocationDataManager.kt` - Manages location updates from GPS, Network, and other providers
+- **LocationInfoAdapter**: `LocationInfoAdapter.kt` - RecyclerView adapter for location data display
+- **Package Structure**: `br.tmvdl.gps` (Brazilian domain, personal project)
+
+### Location Features
+- **Multiple Provider Support**: GPS, Network, Passive, and other location providers
+- **Real-time Updates**: Live location tracking with 1-second intervals
+- **Last Known Locations**: Display of cached location data from all providers
+- **GNSS Status**: Satellite count monitoring for GPS provider
+- **Permission Handling**: Comprehensive location permission management
+- **Mock Location Detection**: Identifies simulated/mock locations
+- **Provider Status**: Real-time monitoring of enabled/disabled location providers
 
 ### Build Configuration
 - **Gradle Version Catalog**: Dependencies managed in `gradle/libs.versions.toml`
@@ -46,12 +64,18 @@ The app uses **Android Navigation Component** with a single-activity architectur
 Standard Android template dependencies:
 - AndroidX Core KTX, AppCompat
 - Material Components
-- ConstraintLayout  
+- ConstraintLayout
 - Navigation Fragment & UI KTX
 - JUnit, Espresso for testing
 
+### Permissions
+The app requires the following location permissions (declared in AndroidManifest.xml):
+- `ACCESS_FINE_LOCATION` - For precise GPS location
+- `ACCESS_COARSE_LOCATION` - For network-based location
+- `ACCESS_BACKGROUND_LOCATION` - For background location access
+
 ## Development Context
 
-This appears to be a fresh Android project template that was created with the intention of building a GPS-related application. No location services, maps integration, or GPS functionality exists yet - making this a blank slate for GPS feature development.
+This is a functional GPS tracking application that demonstrates comprehensive location services implementation. The app provides real-time location tracking from multiple providers, displays detailed location information including satellite data, and handles all location permissions properly.
 
-The project structure follows modern Android development practices with Navigation Components, View Binding, and Kotlin-first approach.
+The project structure follows modern Android development practices with Navigation Components, View Binding, LiveData observables, and proper lifecycle management.
