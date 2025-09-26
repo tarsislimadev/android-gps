@@ -31,7 +31,7 @@
                     android:text="System Status"
                     android:textStyle="bold"
                     android:textSize="18sp"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_marginBottom="4dp" />
 
                 <TextView
                     android:id="@+id/tv_location_enabled"
@@ -170,13 +170,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <Button
-            android:id="@+id/button_first"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/next"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

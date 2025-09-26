@@ -55,10 +55,6 @@ class FirstFragment : Fragment() {
         setupRecyclerViews()
         setupLocationManager()
         
-        binding.buttonFirst.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
-        }
-
         checkPermissionsAndStartTracking()
     }
 
